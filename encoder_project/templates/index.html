@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payload Obfuscation Dashboard</title>
+
+    <style>
+        body {
+            background: #0d1117;
+            color: #c9d1d9;
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            padding: 30px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: #161b22;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #30363d;
+        }
+
+        textarea, input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            color: white;
+            border-radius: 6px;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 10px 15px;
+            background: #238636;
+            border: none;
+            color: white;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            width: auto;           /* FIX */
+            min-width: 120px;
+        }
+
+        button:hover {
+            background: #2ea043;
+        }
+
+        /* 🔥 FINAL FIX FOR LONG TEXT */
+        .output {
+            background: #0d1117;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #30363d;
+
+            max-width: 100%;
+            overflow-x: auto;      /* scroll instead of break */
+            white-space: pre-wrap;
+            word-break: break-word;
+
+            max-height: 150px;     /* prevents huge boxes */
+            overflow-y: auto;
+        }
+
+        /* 🔥 GRID FIX */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        @media (min-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        .safe {
+            background: #238636;
+        }
+
+        .danger {
+            background: #da3633;
+        }
+
+        img {
+            max-width: 600px;
+            width: 100%;
+            display: block;
+            margin: auto;
+            border-radius: 8px;
+            border: 1px solid #30363d;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>Payload Encoder & Obfuscation Dashboard</h2>
+
+    <!-- INPUT -->
+    <div class="card">
+        <form method="POST">
+            <textarea name="payload" placeholder="Enter payload" required></textarea>
+            <input type="text" name="key" placeholder="XOR Key (optional)">
+            <button type="submit">Process</button>
+        </form>
+    </div>
+
+    {% if result %}
+
+    <!-- RESULTS -->
+    <div class="card">
+        <h3>Results</h3>
+
+        <div class="grid">
+
+            <div>
+                <b>Original</b>
+                <div class="output">{{ result.original | e }}</div>
+                <button onclick="copyText(this)">Copy</button>
+            </div>
+
+            <div>
+                <b>Base64</b>
+                <div class="output">{{ result.base64 | e }}</div>
+                <button onclick="copyText(this)">Copy</button>
+            </div>
+
+            <div>
+                <b>XOR</b>
+                <div class="output">{{ result.xor | e }}</div>
+                <button onclick="copyText(this)">Copy</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- DETECTION -->
+    <div class="card">
+        <h3>Detection</h3>
+
+        <p>
+            Original:
+            <span class="badge {{ 'danger' if result.detected_original else 'safe' }}">
+                {{ 'Detected' if result.detected_original else 'Clean' }}
+            </span>
+        </p>
+
+        <p>
+            Base64:
+            <span class="badge {{ 'danger' if result.detected_base64 else 'safe' }}">
+                {{ 'Detected' if result.detected_base64 else 'Clean' }}
+            </span>
+        </p>
+
+        <p>
+            XOR:
+            <span class="badge {{ 'danger' if result.detected_xor else 'safe' }}">
+                {{ 'Detected' if result.detected_xor else 'Clean' }}
+            </span>
+        </p>
+    </div>
+
+    <!-- ENTROPY -->
+    <div class="card">
+        <h3>Entropy</h3>
+        <div class="output">{{ result.entropy }}</div>
+    </div>
+
+    <!-- GRAPH -->
+    <div class="card">
+        <h3>Visualization</h3>
+        <img src="/static/plot.png">
+    </div>
+
+    {% endif %}
+
+</div>
+
+<!-- COPY SCRIPT -->
+<script>
+function copyText(btn) {
+    const text = btn.previousElementSibling.innerText;
+    navigator.clipboard.writeText(text);
+    btn.innerText = "Copied";
+}
+</script>
+
+</body>
+</html>
